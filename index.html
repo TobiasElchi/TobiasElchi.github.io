@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Comment System</title>
+</head>
+<body>
+
+    <h1>Simple Comment System</h1>
+
+    <form id="commentForm">
+        <label for="name">Name:</label>
+        <input type="text" id="name" required>
+
+        <br>
+
+        <label for="comment">Comment:</label>
+        <textarea id="comment" rows="4" required></textarea>
+
+        <br>
+
+        <button type="button" onclick="submitComment()">Submit Comment</button>
+    </form>
+
+    <h2>Comments:</h2>
+    <ul id="commentList"></ul>
+
+    <script>
+        // Function to handle comment submission
+        function submitComment() {
+            // Get values from the form
+            var name = document.getElementById("name").value;
+            var comment = document.getElementById("comment").value;
+
+            // Create a new comment object
+            var newComment = {
+                name: name,
+                comment: comment
+            };
+
+            // Fetch existing comments from the JSON file
+            fetch('comments.json')
+                .then(response => response.json())
+                .then(data => {
+                    // Add the new comment to the existing comments
+                    data.comments.push(newComment);
+
+                    // Save the updated comments back to the JSON file
+                    return fetch('comments.json', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    });
+                })
+                .then(() => {
+                    // Clear the form
+                    document.getElementById("name").value = '';
+                    document.getElementById("comment").value = '';
+
+                    // Refresh the comments on the page
+                    loadComments();
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        // Function to load comments from the JSON file
+        function loadComments() {
+            fetch('comments.json')
+                .then(response => response.json())
+                .then(data => {
+                    // Display comments on the page
+                    var commentList = document.getElementById("commentList");
+                    commentList.innerHTML = '';
+
+                    data.comments.forEach(comment => {
+                        var li = document.createElement("li");
+                        li.textContent = comment.name + ': ' + comment.comment;
+                        commentList.appendChild(li);
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        // Initial load of comments when the page loads
+        loadComments();
+    </script>
+
+</body>
+</html>
